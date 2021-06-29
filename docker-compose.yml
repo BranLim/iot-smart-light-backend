@@ -4,7 +4,7 @@ services:
         image: mongo:4.4.1
         container_name: iot-mongo
         volumes: 
-            - ${HOME}/personal/databases/mongodb:/data/db
+            - ${HOME}/databases/mongodb:/data/db
         ports: 
             - 27017:27017
         restart: unless-stopped
