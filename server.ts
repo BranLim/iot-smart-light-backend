@@ -1,13 +1,8 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const dbConfig = require("./config/database.config.js");
-const mongoose = require("mongoose");
+import express from "express";
+import { dbConfig } from "./config/database.config";
+import mongoose from "mongoose";
 
 const app = express();
-
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(bodyParser.json());
 
 mongoose.Promise = global.Promise;
 
