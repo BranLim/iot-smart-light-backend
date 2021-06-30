@@ -1,8 +1,8 @@
-import express from "express";
+import express, { Application, Request, Response } from "express";
 import { dbConfig } from "./config/database.config";
 import mongoose from "mongoose";
 
-const app = express();
+const app: Application = express();
 
 mongoose.Promise = global.Promise;
 
@@ -18,7 +18,7 @@ mongoose
     process.exit();
   });
 
-app.get("/api/v1/index", (req, res) => {
+app.get("/api/v1/index", (req: Request, res: Response) => {
   res.json({ message: "Smartlight Backend" });
 });
 
