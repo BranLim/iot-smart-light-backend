@@ -1,6 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import { dbConfig } from "./config/database.config";
 import mongoose from "mongoose";
+import routes from "./app/routes/lights-routes";
 
 const app: Application = express();
 
@@ -17,6 +18,8 @@ mongoose
     console.log("Fail to connect to database");
     process.exit();
   });
+
+app.use("/", routes);
 
 app.get("/api/v1/index", (req: Request, res: Response) => {
   res.json({ message: "Smartlight Backend" });
