@@ -14,8 +14,20 @@ const createLight = (req: Request, res: Response) => {
     name,
     ledCount,
   });
-
-  res.status(200).send();
+  
+  light
+    .save()
+    .then(() => {
+      res.status(200).json({
+        message: "Light created",
+      });
+    })
+    .catch((error) => {
+      res.status(500).json({
+        error,
+        message: "No light created.",
+      });
+    });
 };
 
 const changeLightColor = (req: Request, res: Response) => {
