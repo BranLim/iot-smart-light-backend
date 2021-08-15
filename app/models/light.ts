@@ -6,7 +6,7 @@ const LightSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
     pixelCount: { type: Number, required: true },
-    pixels: { type: [LightUnit], required: true },
+    pixels: { type: [LightUnit.schema], required: true },
   },
   { timestamps: true }
 );
