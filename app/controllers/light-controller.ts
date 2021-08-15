@@ -7,14 +7,15 @@ import ILight from "../interfaces/light";
 import ILightUnit from "../interfaces/light-unit";
 
 const createLight = (req: Request, res: Response) => {
-  const { name, ledCount } = req.body;
+  const { name, ledCount } = req.body || {};
 
+  console.log("Name: " + name + " Led Count: " + ledCount);
   const light = new Light({
     _id: new mongoose.Types.ObjectId(),
-    name,
-    ledCount,
+    name: name,
+    pixelCount: ledCount,
   });
-  
+
   light
     .save()
     .then(() => {
@@ -37,6 +38,8 @@ const changeLightColor = (req: Request, res: Response) => {
 };
 
 const lightConfig = (req: Request, res: Response) => {
+  console.log("Retrieving Light Configuration");
+
   Light.findOne({}, (err: mongoose.CallbackError, light: ILight) => {
     if (err) {
       return res.status(500).json({ err, message: "Cannot read light config" });
@@ -44,10 +47,18 @@ const lightConfig = (req: Request, res: Response) => {
     if (!light) {
       return res.status(404).json({ message: "No light configuration found" });
     }
-    if (isLightUnit(light.leds)) {
-      const led = light.leds as ILightUnit;
+
+    console.log(light);
+    console.log(light.pixels);
+    if (!light.pixels) {
+      res.status(500).json({ message: "Cannot retrieve light configuration" });
+    }
+
+    if (isLightUnit(light.pixels)) {
+      const led = light.pixels as ILightUnit;
 
       const config: LightConfigDto = {
+        name: light.name,
         pixels: [
           {
             red: led.red,
@@ -56,9 +67,15 @@ const lightConfig = (req: Request, res: Response) => {
           },
         ],
       };
-      res.status(200).json(config);
-    } else {
+      return res.status(200).json(config);
     }
+
+    const leds = light.pixels as ILightUnit[];
+
+    const config: LightConfigDto = {
+      name: light.name,
+    };
+    return res.status(200).json(config);
   });
 };
 
