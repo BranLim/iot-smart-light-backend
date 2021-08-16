@@ -54,26 +54,29 @@ const lightConfig = (req: Request, res: Response) => {
       res.status(500).json({ message: "Cannot retrieve light configuration" });
     }
 
+    const pixels: LightUnitDto[] = [];
+
     if (isLightUnit(light.pixels)) {
       const led = light.pixels as ILightUnit;
-
-      const config: LightConfigDto = {
-        name: light.name,
-        pixels: [
-          {
-            red: led.red,
-            green: led.green,
-            blue: led.blue,
-          },
-        ],
-      };
-      return res.status(200).json(config);
+      pixels.push({
+        red: led.red,
+        green: led.green,
+        blue: led.blue,
+      });
     }
 
     const leds = light.pixels as ILightUnit[];
 
     const config: LightConfigDto = {
       name: light.name,
+      pixels: leds.map((led) => {
+        const lightUnit: LightUnitDto = {
+          red: led.red,
+          green: led.green,
+          blue: led.blue,
+        };
+        return lightUnit;
+      }),
     };
     return res.status(200).json(config);
   });

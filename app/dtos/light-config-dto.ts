@@ -6,5 +6,5 @@ export default interface LightUnitDto {
 
 export default interface LightConfigDto {
   name?: string;
-  pixels?: [LightUnitDto];
+  pixels?: LightUnitDto[];
 }
