@@ -5,6 +5,7 @@ import LightConfigDto from "../dtos/light-config-dto";
 import LightUnitDto from "../dtos/light-config-dto";
 import ILight from "../interfaces/light";
 import ILightUnit from "../interfaces/light-unit";
+import LightUnit from "../models/light-unit";
 
 const createLight = (req: Request, res: Response) => {
   const { name, ledCount } = req.body || {};
@@ -32,7 +33,27 @@ const createLight = (req: Request, res: Response) => {
 };
 
 const changeLightColor = (req: Request, res: Response) => {
-  const { name, lightColor } = req.body;
+  const lightConfig: LightConfigDto = req.body;
+  console.log(lightConfig);
+
+  const pixelsToUpdate: any[] =
+    lightConfig.pixels?.map((led) => {
+      const pixel = {
+        type: "NeoPixel",
+        red: led.red || NaN,
+        green: led.green || NaN,
+        blue: led.blue || NaN,
+      };
+      return pixel;
+    }) || [];
+
+  Light.findOne(
+    { _id: lightConfig.id },
+    (err: mongoose.CallbackError, light: ILight) => {
+      light.pixels = pixelsToUpdate;
+      light.save();
+    }
+  );
 
   res.status(200).send();
 };
@@ -44,14 +65,15 @@ const lightConfig = (req: Request, res: Response) => {
     if (err) {
       return res.status(500).json({ err, message: "Cannot read light config" });
     }
+
     if (!light) {
       return res.status(404).json({ message: "No light configuration found" });
     }
 
-    console.log(light);
-    console.log(light.pixels);
     if (!light.pixels) {
-      res.status(500).json({ message: "Cannot retrieve light configuration" });
+      return res
+        .status(500)
+        .json({ message: "Cannot retrieve light configuration" });
     }
 
     const pixels: LightUnitDto[] = [];
@@ -63,20 +85,23 @@ const lightConfig = (req: Request, res: Response) => {
         green: led.green,
         blue: led.blue,
       });
-    }
+    } else {
+      const leds = light.pixels as ILightUnit[];
 
-    const leds = light.pixels as ILightUnit[];
-
-    const config: LightConfigDto = {
-      name: light.name,
-      pixels: leds.map((led) => {
+      leds.forEach((led) => {
         const lightUnit: LightUnitDto = {
           red: led.red,
           green: led.green,
           blue: led.blue,
         };
-        return lightUnit;
-      }),
+        pixels.push(lightUnit);
+      });
+    }
+
+    const config: LightConfigDto = {
+      id: light._id,
+      name: light.name,
+      pixels: pixels,
     };
     return res.status(200).json(config);
   });
