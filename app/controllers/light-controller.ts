@@ -5,16 +5,17 @@ import LightConfigDto from "../dtos/light-config-dto";
 import LightUnitDto from "../dtos/light-config-dto";
 import ILight from "../interfaces/light";
 import ILightUnit from "../interfaces/light-unit";
-import LightUnit from "../models/light-unit";
 
 const createLight = (req: Request, res: Response) => {
-  const { name, ledCount } = req.body || {};
+  const request: { name: string; ledCount: number } = req.body || {};
 
-  console.log("Name: " + name + " Led Count: " + ledCount);
+  console.log("Name: " + request.name + " Led Count: " + request.ledCount);
+
   const light = new Light({
-    _id: new mongoose.Types.ObjectId(),
-    name: name,
-    pixelCount: ledCount,
+    id: new mongoose.Types.ObjectId(),
+    name: request.name,
+    pixelCount: request.ledCount,
+    pixels: [],
   });
 
   light
@@ -22,6 +23,7 @@ const createLight = (req: Request, res: Response) => {
     .then(() => {
       res.status(200).json({
         message: "Light created",
+        objectId: light.id,
       });
     })
     .catch((error) => {
@@ -35,8 +37,11 @@ const createLight = (req: Request, res: Response) => {
 const changeLightColor = (req: Request, res: Response) => {
   const lightConfig: LightConfigDto = req.body;
   console.log(lightConfig);
+  if (!lightConfig) {
+    return res.status(400).send({ message: "Missing request body" });
+  }
 
-  const pixelsToUpdate: any[] =
+  const pixelsToUpdate: ILightUnit[] =
     lightConfig.pixels?.map((led) => {
       const pixel = {
         type: "NeoPixel",
@@ -48,14 +53,19 @@ const changeLightColor = (req: Request, res: Response) => {
     }) || [];
 
   Light.findOne(
-    { _id: lightConfig.id },
-    (err: mongoose.CallbackError, light: ILight) => {
+    { id: lightConfig.id },
+    (err: mongoose.CallbackError, light: ILight & mongoose.Document) => {
+      if (!light) {
+        return res.status(404).send({ message: "No light found." });
+      }
+      if (err) {
+        return res.status(500).send({ message: "Error finding light." });
+      }
       light.pixels = pixelsToUpdate;
       light.save();
+      res.status(200).send({ message: "Light color updated." });
     }
   );
-
-  res.status(200).send();
 };
 
 const lightConfig = (req: Request, res: Response) => {
@@ -99,7 +109,7 @@ const lightConfig = (req: Request, res: Response) => {
     }
 
     const config: LightConfigDto = {
-      id: light._id,
+      id: light.id,
       name: light.name,
       pixels: pixels,
     };

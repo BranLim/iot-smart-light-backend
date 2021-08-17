@@ -1,6 +1,4 @@
-import { Document } from "mongoose";
-
-export default interface ILightUnit extends Document {
+export default interface ILightUnit{
   type: String;
   red: number;
   green: number;
