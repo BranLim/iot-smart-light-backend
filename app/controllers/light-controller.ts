@@ -15,6 +15,7 @@ const createLight = (req: Request, res: Response) => {
     id: new mongoose.Types.ObjectId(),
     name: request.name,
     pixelCount: request.ledCount,
+    brightness: 50,
     pixels: [],
   });
 
@@ -34,20 +35,76 @@ const createLight = (req: Request, res: Response) => {
     });
 };
 
+const turnOn = (req: Request, res: Response) => {
+  const stateRequest: { id: string } = req.body || {};
+  if (!stateRequest) {
+    return res.status(400).json({ message: "Missing request body" });
+  }
+  changeLightState(stateRequest.id, 1, res);
+};
+
+const turnOff = (req: Request, res: Response) => {
+  const stateRequest: { id: string } = req.body || {};
+  if (!stateRequest) {
+    return res.status(400).json({ message: "Missing request body" });
+  }
+  changeLightState(stateRequest.id, 0, res);
+};
+
+const changeLightState = (lightId: string, state: number, res: Response) => {
+  Light.findOne(
+    { id: lightId },
+    (err: mongoose.CallbackError, light: ILight & mongoose.Document) => {
+      if (!light) {
+        return res.status(404).send({ message: "No light found." });
+      }
+      if (err) {
+        return res.status(500).send({ message: "Error finding light." });
+      }
+      light.state = state;
+      light.save();
+      res
+        .status(200)
+        .send({ message: state ? "Light turned on." : "Light turned off." });
+    }
+  );
+};
+
+const changeBrightness = (req: Request, res: Response) => {
+  const brightnessRequest: { id: string; brightness: number } = req.body || {};
+  if (!brightnessRequest) {
+    return res.status(400).json({ message: "Missing request body" });
+  }
+  Light.findOne(
+    { id: brightnessRequest.id },
+    (err: mongoose.CallbackError, light: ILight & mongoose.Document) => {
+      if (!light) {
+        return res.status(404).send({ message: "No light found." });
+      }
+      if (err) {
+        return res.status(500).send({ message: "Error finding light." });
+      }
+      light.brightness = brightnessRequest.brightness;
+      light.save();
+      res.status(200).send({ message: "Light brightness updated." });
+    }
+  );
+};
+
 const changeLightColor = (req: Request, res: Response) => {
   const lightConfig: LightConfigDto = req.body;
   console.log(lightConfig);
   if (!lightConfig) {
-    return res.status(400).send({ message: "Missing request body" });
+    return res.status(400).json({ message: "Missing request body" });
   }
 
   const pixelsToUpdate: ILightUnit[] =
     lightConfig.pixels?.map((led) => {
       const pixel = {
         type: "NeoPixel",
-        red: led.red || NaN,
-        green: led.green || NaN,
-        blue: led.blue || NaN,
+        red: led.red || 0,
+        green: led.green || 0,
+        blue: led.blue || 0,
       };
       return pixel;
     }) || [];
@@ -111,6 +168,8 @@ const lightConfig = (req: Request, res: Response) => {
     const config: LightConfigDto = {
       id: light.id,
       name: light.name,
+      brightness: light.brightness,
+      state: light.state,
       pixels: pixels,
     };
     return res.status(200).json(config);
@@ -121,6 +180,13 @@ const isLightUnit = (obj: ILightUnit | any): obj is ILightUnit => {
   return obj && obj.name && typeof obj.name === "string";
 };
 
-const lightController = { createLight, changeLightColor, lightConfig };
+const lightController = {
+  createLight,
+  changeBrightness,
+  changeLightColor,
+  lightConfig,
+  turnOff,
+  turnOn,
+};
 
 export default lightController;

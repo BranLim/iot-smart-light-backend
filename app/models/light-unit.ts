@@ -6,6 +6,7 @@ const LightUnitSchema: Schema<ILightUnit> = new Schema<ILightUnit>({
   red: { type: Number, required: true },
   green: { type: Number, required: true },
   blue: { type: Number, required: true },
+
 });
 
 export default mongoose.model<ILightUnit>("LightUnit", LightUnitSchema);

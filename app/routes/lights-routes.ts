@@ -14,6 +14,16 @@ router.post(
   lightController.changeLightColor
 );
 
+router.post(
+  "/api/v1/lights/brightness",
+  jsonParser,
+  lightController.changeBrightness
+);
+
 router.post("/api/v1/lights", jsonParser, lightController.createLight);
+
+router.post("/api/v1/lights/off", jsonParser, lightController.turnOff);
+
+router.post("/api/v1/lights/on", jsonParser, lightController.turnOn);
 
 export default router;
