@@ -19,7 +19,7 @@ mongoose
     process.exit();
   });
 
-app.use("/", routes);
+app.use("/smartlights/", routes);
 
 app.get("/api/v1/index", (req: Request, res: Response) => {
   res.json({ message: "Smartlight Backend" });
