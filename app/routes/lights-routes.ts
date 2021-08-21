@@ -6,7 +6,7 @@ const router = express.Router();
 
 const jsonParser = bodyParser.json();
 
-router.get("/api/v1/lights/config", jsonParser, lightController.lightConfig);
+router.get("/api/v1/lights/status", jsonParser, lightController.lightStatus);
 
 router.post(
   "/api/v1/lights/color",

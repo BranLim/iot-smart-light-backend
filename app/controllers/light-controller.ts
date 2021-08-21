@@ -184,7 +184,7 @@ const lightController = {
   createLight,
   changeBrightness,
   changeLightColor,
-  lightConfig,
+  lightStatus: lightConfig,
   turnOff,
   turnOn,
 };
